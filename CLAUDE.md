@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Mailspring-Sync is the native C++11 sync engine for the Mailspring email client. It handles email, contact, and calendar synchronization via IMAP/SMTP using MailCore2, storing data in SQLite with a JSON-based schema.
+Mizo Mail-Sync is the native C++11 sync engine for the Mizo Mail email client. It handles email, contact, and calendar synchronization via IMAP/SMTP using MailCore2, storing data in SQLite with a JSON-based schema.
 
 ## Build Commands
 
@@ -63,7 +63,7 @@ For debugging in Xcode/Visual Studio, configure the debugger to pass `--identity
 
 ### Reactive Data Flow (Core Path)
 
-All database changes flow through an entity layer and are emitted as a JSON event stream to stdout, enabling the Mailspring UI to reactively update.
+All database changes flow through an entity layer and are emitted as a JSON event stream to stdout, enabling the Mizo Mail UI to reactively update.
 
 **Data Flow:**
 1. **Model modification** → Caller modifies a `MailModel` subclass (Message, Thread, Folder, etc.)
@@ -96,7 +96,7 @@ transaction.commit(); // All deltas emitted together
 - `DeltaStream` (`MailSync/DeltaStream.hpp`) - Singleton (`SharedDeltaStream()`) managing stdout output with buffering
 
 ### Process Model
-Each mailsync process handles a single email account. Mailspring runs one process per connected account. The process communicates via:
+Each mailsync process handles a single email account. Mizo Mail runs one process per connected account. The process communicates via:
 - **stdout**: Emits newline-separated JSON for all model changes (see Reactive Data Flow above)
 - **stdin**: Accepts JSON task objects and commands (queue-task, cancel-task, wake-workers, need-bodies)
 

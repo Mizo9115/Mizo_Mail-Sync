@@ -6,7 +6,7 @@
 //  Copyright © 2017 Foundry 376. All rights reserved.
 //
 //  Use of this file is subject to the terms and conditions defined
-//  in 'LICENSE.md', which is part of the Mailspring-Sync package.
+//  in 'LICENSE.md', which is part of the Mizo Mail-Sync package.
 //
 
 #include "MailProcessor.hpp"
@@ -39,7 +39,7 @@ class CleanHTMLBodyRendererTemplateCallback : public Object, public HTMLRenderer
     
     // Normally this calls through to XMLTidy but we have our own sanitizer at the Javascript
     // level and Tidy has led to some bugs due to its very strict parsing:
-    // https://github.com/Foundry376/Mailspring/issues/301#issuecomment-342265351
+    // https://github.com/Mizo9115/Mizo_Mail/issues/301#issuecomment-342265351
     mailcore::String * cleanHTMLForPart(mailcore::String * html) {
         return html;
     }
@@ -614,7 +614,7 @@ void MailProcessor::upsertThreadReferences(string threadId, string accountId, st
 }
 
 void MailProcessor::upsertContacts(Message * message) {
-    // As of Mailspring 1.7, we no longer keep around Contacts that you've never
+    // As of Mizo Mail 1.7, we no longer keep around Contacts that you've never
     // sent email to. We actually never really did anything with these.
     if (!message->isSentByUser()) {
         return;
@@ -673,9 +673,9 @@ void MailProcessor::upsertContacts(Message * message) {
         string name = result.second.count("name") ? result.second["name"].get<string>() : "";
         string email = result.second.count("email") ? result.second["email"].get<string>() : "";
 
-        // "Mailspring Team" is used in the welcome email sent from the user's own address.
+        // "Mizo Mail Team" is used in the welcome email sent from the user's own address.
         // Skip creating the contact to avoid saving the wrong display name.
-        if (name == "Mailspring Team" && email.find("@getmailspring.com") == string::npos) {
+        if (name == "Mizo Mail Team" && email.find("@getmailspring.com") == string::npos) {
             continue;
         }
 

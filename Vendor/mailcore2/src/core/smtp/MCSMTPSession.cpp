@@ -529,7 +529,7 @@ void SMTPSession::login(ErrorCode * pError)
         
         // BG MOVED TO BOTTOM
         
-        // Mailspring doesn't really support these because they require that a secret
+        // Mizo Mail doesn't really support these because they require that a secret
         // has been exchanged. Maybe on some linux systems this value is present elsewhere?
         //
         // https://docs.kolab.org/administrator-guide/md5-sasl-mechs.html
@@ -542,7 +542,7 @@ void SMTPSession::login(ErrorCode * pError)
             setAuthType((AuthType) (authType() | AuthTypeSASLCRAMMD5));
         }
 
-        // Mailspring doesn't really support these because libsasl2 doesn't actually
+        // Mizo Mail doesn't really support these because libsasl2 doesn't actually
         // seem to implement them. We should surface this to the user somehow.
 
         else if (mSmtp->auth & MAILSMTP_AUTH_SRP) {
@@ -743,8 +743,8 @@ void SMTPSession::checkAccount(Address * from, ErrorCode * pError)
 
     // build the MIME message
     MessageBuilder builder;
-    builder.header()->setSubject(MCSTR("Mailspring SMTP Test Email"));
-    builder.header()->setUserAgent(MCSTR("Mailspring"));
+    builder.header()->setSubject(MCSTR("Mizo Mail SMTP Test Email"));
+    builder.header()->setUserAgent(MCSTR("Mizo Mail"));
     builder.header()->setDate(time(0));
 
     Address* me = Address::addressWithMailbox(from->mailbox());
@@ -757,12 +757,12 @@ void SMTPSession::checkAccount(Address * from, ErrorCode * pError)
     replyTo->addObject(me);
 
     builder.header()->setReplyTo(replyTo);
-    builder.header()->setFrom(Address::addressWithDisplayName(MCSTR("Mailspring Team"), from->mailbox()));
+    builder.header()->setFrom(Address::addressWithDisplayName(MCSTR("Mizo Mail Team"), from->mailbox()));
     builder.setTextBody(MCSTR(
-        "This is an email sent by Mailspring while we were testing your account config.\r\n\r\n"
+        "This is an email sent by Mizo Mail while we were testing your account config.\r\n\r\n"
         "As you've received it, everything must be a-ok.\r\n\r\n"
-        "Kind regards,\r\nThe Mailspring Team\r\n\r\n"
-        "P.S. a massive thank you for using Mailspring. We'll love you always!"
+        "Kind regards,\r\nThe Mizo Mail Team\r\n\r\n"
+        "P.S. a massive thank you for using Mizo Mail. We'll love you always!"
     ));
 
     // Save the message data / body we'll write to the sent folder

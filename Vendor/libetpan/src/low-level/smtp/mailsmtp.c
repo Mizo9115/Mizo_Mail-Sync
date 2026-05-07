@@ -310,7 +310,7 @@ static int get_hostname_smart_bg(mailsmtp * session, char * buf, int len)
   }
 
   // If that fails, try to use something random. Otherwise they just can't
-  // use Mailspring at all, so we may as well try something.
+  // use Mizo Mail at all, so we may as well try something.
   if (r != MAILSMTP_NO_ERROR) {
     snprintf(buf, len, "mailspring-smtp");
     r = MAILSMTP_NO_ERROR;

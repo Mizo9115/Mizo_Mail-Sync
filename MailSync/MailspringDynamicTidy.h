@@ -1,6 +1,6 @@
 //
 //  MailspringDynamicTidy.h
-//  Mailspring-Sync
+//  Mizo Mail-Sync
 //
 //  Dynamic loading wrapper for libtidy on Linux.
 //  This allows the same binary to work across different Linux distributions

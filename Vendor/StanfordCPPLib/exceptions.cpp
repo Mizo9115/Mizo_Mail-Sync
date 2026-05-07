@@ -644,7 +644,7 @@ static void stanfordCppLibSignalHandler(int sig) {
     std::string DEFAULT_EXCEPTION_DETAILS = "No details were provided about the error.";
     msg += "\n";
     msg += "***\n";
-    msg += "*** Mailspring Sync \n";
+    msg += "*** Mizo Mail Sync \n";
     msg += "*** " + DEFAULT_EXCEPTION_KIND + " occurred during program execution: \n";
     msg += "*** " + DEFAULT_EXCEPTION_DETAILS + "\n";
     msg += "***\n";
@@ -695,7 +695,7 @@ void logCurrentExceptionWithStackTrace() {
      std::string msg;
      msg += "\n";
      msg += "***\n";
-     msg += "*** Mailspring Sync \n";
+     msg += "*** Mizo Mail Sync \n";
      msg += "*** " + DEFAULT_EXCEPTION_KIND + " occurred during program execution: \n";
      msg += "*** " + DEFAULT_EXCEPTION_DETAILS + "\n";
      msg += "***\n";
@@ -766,7 +766,7 @@ static void stanfordCppLibUnexpectedHandler() {
     std::string msg;
     msg += "\n";
     msg += "***\n";
-    msg += "*** Mailspring Sync \n";
+    msg += "*** Mizo Mail Sync \n";
     msg += "*** " + DEFAULT_EXCEPTION_KIND + " occurred during program execution: \n";
     msg += "*** " + DEFAULT_EXCEPTION_DETAILS + "\n";
     msg += "***\n";

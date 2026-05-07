@@ -11,6 +11,8 @@ MailSync.xcodeproj/xcuserdata
 /Windows/mailsync.VC.*
 /Windows/mailsync.vcxproj.user
 /Windows/.vs/mailsync/v14/.suo
+/Windows/mailsync.sdf
+/Windows/ipch/
 /MailSync.xcodeproj/project.xcworkspace/xcuserdata/bengotow.xcuserdatad/IDEFindNavigatorScopes.plist
 /Vendor/libetpan/build-mac/DerivedData
 /DerivedData

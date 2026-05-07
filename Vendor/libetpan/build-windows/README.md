@@ -1,6 +1,6 @@
 ## libEtPan on Windows ##
 
-libEtPan is built as part of the Mailspring-Sync project. External dependencies are managed via [vcpkg](https://vcpkg.io/) and are automatically installed during the GitHub Actions build.
+libEtPan is built as part of the Mizo Mail-Sync project. External dependencies are managed via [vcpkg](https://vcpkg.io/) and are automatically installed during the GitHub Actions build.
 
 ### Dependencies ###
 

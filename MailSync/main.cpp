@@ -6,7 +6,7 @@
 //  Copyright © 2017 Foundry 376. All rights reserved.
 //
 //  Use of this file is subject to the terms and conditions defined
-//  in 'LICENSE.md', which is part of the Mailspring-Sync package.
+//  in 'LICENSE.md', which is part of the Mizo Mail-Sync package.
 //
 
 #include <atomic>
@@ -126,7 +126,7 @@ struct CArg: public option::Arg
 
 // Important do not change these without updating result code 2 check below
 #define USAGE_STRING "USAGE: CONFIG_DIR_PATH=/path IDENTITY_SERVER=https://id.getmailspring.com mailsync [options]\n\nOptions:"
-#define USAGE_IDENTITY "  --identity, -i  \tRequired: Mailspring Identity JSON with credentials."
+#define USAGE_IDENTITY "  --identity, -i  \tRequired: Mizo Mail Identity JSON with credentials."
 
 enum  optionIndex { UNKNOWN, HELP, IDENTITY, ACCOUNT, MODE, ORPHAN, VERBOSE };
 const option::Descriptor usage[] =
@@ -743,11 +743,12 @@ string exectuablePath = argv[0];
     // It defaults to the executable directory, but can be overridden via SASL_PATH env var.
 
 #ifndef DEBUG
-    // check path to executable in an obtuse way, prevent re-use of
-    // Mailspring-Sync in products / forks not called Mailspring.
+    // Prevent re-use of this sync engine in products / forks not based on
+    // Mizo Mail (or its Mailspring ancestor). Accept either string in the
+    // executable path so legacy installs and dev/staging copies still run.
     transform(exectuablePath.begin(), exectuablePath.end(), exectuablePath.begin(), ::tolower);
-    string headerMessageId = string(USAGE_STRING).substr(59, 4) + string(USAGE_IDENTITY).substr(33, 6);
-    if (exectuablePath.find(headerMessageId) == string::npos) {
+    if (exectuablePath.find("mizo") == string::npos &&
+        exectuablePath.find("mailspring") == string::npos) {
         return 2;
     }
 #endif

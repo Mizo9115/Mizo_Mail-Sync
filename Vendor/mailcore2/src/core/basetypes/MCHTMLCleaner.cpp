@@ -15,7 +15,7 @@
 typedef unsigned long ulong;
 #endif
 
-// On Linux, use Mailspring's dynamic tidy loader to support different
+// On Linux, use Mizo Mail's dynamic tidy loader to support different
 // libtidy sonames across distributions. On other platforms, link directly.
 #if defined(__linux__)
 #include "MailspringDynamicTidy.h"
@@ -41,7 +41,7 @@ using namespace mailcore;
 String * HTMLCleaner::cleanHTML(String * input)
 {
 #if defined(__linux__)
-    // Linux: use Mailspring's dynamic tidy wrapper
+    // Linux: use Mizo Mail's dynamic tidy wrapper
     // SECURITY: We must not return unsanitized HTML. If tidy fails, return empty string.
     if (!mailspring_tidy_available()) {
         const char* err = mailspring_tidy_error();

@@ -6,7 +6,7 @@
 //  Copyright © 2017 Foundry 376. All rights reserved.
 //
 //  Use of this file is subject to the terms and conditions defined
-//  in 'LICENSE.md', which is part of the Mailspring-Sync package.
+//  in 'LICENSE.md', which is part of the Mizo Mail-Sync package.
 //
 #include <algorithm>
 
@@ -369,7 +369,7 @@ bool SyncWorker::syncNow()
             //
             // 1) Set remoteUID to the "UNLINKED" value for every message in the folder
             // 2) Run a 'deep' scan which will refetch the metadata for the messages,
-            //    compute the Mailspring message IDs and re-map local models to remote UIDs.
+            //    compute the Mizo Mail message IDs and re-map local models to remote UIDs.
             //
             // Notes:
             // - It's very important that this not generate deltas - because we're only changing
@@ -545,9 +545,9 @@ void SyncWorker::ensureRootMailspringFolder(vector<string> containerFolderCompon
         ErrorCode err = ErrorCode::ErrorNone;
         session.createFolder(desiredPath, &err);
         if (err) {
-            logger->error("Could not create Mailspring container folder: {}. {}", desiredPath->UTF8Characters(), ErrorCodeToTypeMap[err]);
+            logger->error("Could not create Mizo Mail container folder: {}. {}", desiredPath->UTF8Characters(), ErrorCodeToTypeMap[err]);
         } else {
-            logger->error("Created Mailspring container folder: {}.", desiredPath->UTF8Characters());
+            logger->error("Created Mizo Mail container folder: {}.", desiredPath->UTF8Characters());
         }
     }
 }
@@ -583,7 +583,7 @@ vector<shared_ptr<Folder>> SyncWorker::syncFoldersAndLabels()
     string mainPrefix = MailUtils::namespacePrefixOrBlank(&session);
     bool ensuredRoot = false;
     
-    // create required Mailspring folders if they don't exist
+    // create required Mizo Mail folders if they don't exist
     // TODO: Consolidate this into role association code below, and make it
     // use the same business logic as creating / updating folders from tasks.
     vector<string> mailspringFolders{"Snoozed"};
@@ -615,10 +615,10 @@ vector<shared_ptr<Folder>> SyncWorker::syncFoldersAndLabels()
             String * desiredPath = session.defaultNamespace()->pathForComponents(components);
             session.createFolder(desiredPath, &err);
             if (err) {
-                logger->error("Could not create required Mailspring folder: {}. {}", desiredPath->UTF8Characters(), ErrorCodeToTypeMap[err]);
+                logger->error("Could not create required Mizo Mail folder: {}. {}", desiredPath->UTF8Characters(), ErrorCodeToTypeMap[err]);
                 continue;
             }
-            logger->error("Created required Mailspring folder: {}.", desiredPath->UTF8Characters());
+            logger->error("Created required Mizo Mail folder: {}.", desiredPath->UTF8Characters());
             IMAPFolder * fake = new IMAPFolder();
             fake->autorelease();
             fake->setPath(desiredPath);

@@ -1081,8 +1081,8 @@ void IMAPSession::login(ErrorCode * pError)
         
 #if 0
 /* This code is sensitive to the escaping of fields in the identity response,
- (breaks ProtonMail support) and isn't used anywhere in Mailspring. See
- https://github.com/Foundry376/Mailspring/issues/429
+ (breaks ProtonMail support) and isn't used anywhere in Mizo Mail. See
+ https://github.com/Mizo9115/Mizo_Mail/issues/429
 */
         if (isIdentityEnabled()) {
             IMAPIdentity * serverIdentity = identity(clientIdentity(), pError);

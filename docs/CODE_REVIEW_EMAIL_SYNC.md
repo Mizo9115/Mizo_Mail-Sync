@@ -1,4 +1,4 @@
-# Code Review: Mailspring-Sync Email Synchronization
+# Code Review: Mizo Mail-Sync Email Synchronization
 
 ## Executive Summary
 

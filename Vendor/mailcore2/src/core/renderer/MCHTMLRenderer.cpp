@@ -18,7 +18,7 @@ using namespace mailcore;
 
 /**
  
- IMPORTANT: BG - I have modified this file considerably for Mailspring's purposes. Changes include:
+ IMPORTANT: BG - I have modified this file considerably for Mizo Mail's purposes. Changes include:
  
  - Rendering an email that only has a plaintext part returns PLAINTEXT:<text> and NOT HTML.
  

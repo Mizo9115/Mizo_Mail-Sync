@@ -6,7 +6,7 @@
 //  Copyright © 2017 Foundry 376. All rights reserved.
 //
 //  Use of this file is subject to the terms and conditions defined
-//  in 'LICENSE.md', which is part of the Mailspring-Sync package.
+//  in 'LICENSE.md', which is part of the Mizo Mail-Sync package.
 //
 
 #include "TaskProcessor.hpp"
@@ -603,7 +603,7 @@ Message TaskProcessor::inflateClientDraftJSON(json & draftJSON, shared_ptr<Messa
             folder = store->find<Folder>(q);
         }
         if (folder == nullptr) {
-            throw SyncException("no-drafts-folder", "Mailspring can't find your Drafts folder. To create and send mail, visit Preferences > Folders and choose a Drafts folder.", false);
+            throw SyncException("no-drafts-folder", "Mizo Mail can't find your Drafts folder. To create and send mail, visit Preferences > Folders and choose a Drafts folder.", false);
         }
         base = {
             {"remoteUID", 0},
@@ -838,7 +838,7 @@ void TaskProcessor::performLocalDestroyDraft(Task * task) {
     // Find the trash folder
     auto trash = store->find<Folder>(Query().equal("accountId", account->id()).equal("role", "trash"));
     if (trash == nullptr) {
-        throw SyncException("no-trash-folder", "Mailspring doesn't know which folder to use for trash. Visit Preferences > Folders to assign a trash folder.", false);
+        throw SyncException("no-trash-folder", "Mizo Mail doesn't know which folder to use for trash. Visit Preferences > Folders to assign a trash folder.", false);
     }
 
     auto stubIds = json::array();
@@ -1414,7 +1414,7 @@ void TaskProcessor::performRemoteSendDraft(Task * task) {
     if (sent == nullptr) {
         sent = store->find<Label>(Query().equal("accountId", account->id()).equal("role", "sent"));
         if (sent == nullptr) {
-            throw SyncException("no-sent-folder", "Mailspring doesn't know which folder to use for sent mail. Visit Preferences > Folders to assign a sent folder.", false);
+            throw SyncException("no-sent-folder", "Mizo Mail doesn't know which folder to use for sent mail. Visit Preferences > Folders to assign a sent folder.", false);
         }
     }
     String * sentPath = AS_MCSTR(sent->path());
@@ -1441,7 +1441,7 @@ void TaskProcessor::performRemoteSendDraft(Task * task) {
 
     builder.header()->setSubject(AS_MCSTR(draft.subject()));
     builder.header()->setMessageID(AS_MCSTR(draft.headerMessageId()));
-    builder.header()->setUserAgent(MCSTR("Mailspring"));
+    builder.header()->setUserAgent(MCSTR("Mizo Mail"));
     builder.header()->setDate(time(0));
     
     // todo: lookup thread reference entire chain?
@@ -1971,7 +1971,7 @@ void TaskProcessor::performRemoteSendRSVP(Task * task) {
     // Build MIME headers
     MessageBuilder builder;
     builder.header()->setSubject(AS_MCSTR(subject));
-    builder.header()->setUserAgent(MCSTR("Mailspring"));
+    builder.header()->setUserAgent(MCSTR("Mizo Mail"));
     builder.header()->setDate(time(0));
 
     Array * toArray = Array::array();
