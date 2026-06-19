@@ -218,6 +218,9 @@ CURL * CreateIdentityRequest(string path, string method, const char * payloadCha
 }
 
 const json PerformIdentityRequest(string path, string method, const json & payload) {
+    if (payload.is_null()) {
+        return PerformJSONRequest(CreateIdentityRequest(path, method, nullptr));
+    }
     string payloadString = payload.dump();
     return PerformJSONRequest(CreateIdentityRequest(path, method, payloadString.c_str()));
 }
