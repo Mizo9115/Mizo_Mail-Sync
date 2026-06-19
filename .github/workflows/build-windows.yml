@@ -1,5 +1,8 @@
 name: Build Windows
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [main, master]
@@ -178,18 +181,38 @@ jobs:
           name: win-ia32-mailsync
           path: Windows/mailsync.tar.gz
 
+      - name: Publish GitHub release
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $tag = "mailsync-$env:COMMIT"
+          $asset = "win-ia32-mailsync.tar.gz"
+          Copy-Item "Windows/mailsync.tar.gz" $asset -Force
+          gh release view $tag 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $tag $asset --title "mailsync $env:COMMIT" --notes "Prebuilt mailsync binaries for commit $env:COMMIT."
+          } else {
+            gh release upload $tag $asset --clobber
+          }
+
       - name: Deploy to S3
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        continue-on-error: true
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: us-east-1
         shell: pwsh
         run: |
-          # Upload to S3
+          if ([string]::IsNullOrWhiteSpace($env:AWS_ACCESS_KEY_ID)) {
+            Write-Host "Skipping S3 deploy: AWS credentials not configured."
+            exit 0
+          }
+
           $archivePath = "Windows/mailsync.tar.gz"
           $s3Key = "mailsync/$env:COMMIT/win-ia32/mailsync.tar.gz"
-
           aws s3 cp $archivePath s3://mailspring-builds/$s3Key --acl public-read
 
   # Run install-check in a separate job to verify SSL/TLS connectivity.
