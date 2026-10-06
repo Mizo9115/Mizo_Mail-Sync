@@ -13,20 +13,35 @@
 #define ProgressCollectors_hpp
 
 #include <stdio.h>
+#include <chrono>
 #include <MailCore/MailCore.h>
+
+#include "Task.hpp"
+#include "MailStore.hpp"
 
 using namespace mailcore;
 
 class IMAPProgress : public IMAPProgressCallback {
+    Task * _task;
+    MailStore * _store;
+    unsigned int _lastReportedPercent;
+    std::chrono::steady_clock::time_point _lastSaveTime;
+
 public:
+    IMAPProgress(Task * task = nullptr, MailStore * store = nullptr);
     void bodyProgress(IMAPSession * session, unsigned int current, unsigned int maximum);
     void itemsProgress(IMAPSession * session, unsigned int current, unsigned int maximum);
 };
 
 class SMTPProgress : public SMTPProgressCallback {
+    Task * _task;
+    MailStore * _store;
+    unsigned int _lastReportedPercent;
+    std::chrono::steady_clock::time_point _lastSaveTime;
+
 public:
-    
-    void bodyProgress(IMAPSession * session, unsigned int current, unsigned int maximum);
+    SMTPProgress(Task * task = nullptr, MailStore * store = nullptr);
+    void bodyProgress(SMTPSession * session, unsigned int current, unsigned int maximum);
 };
 
 

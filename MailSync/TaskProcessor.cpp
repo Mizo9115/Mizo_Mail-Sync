@@ -30,6 +30,8 @@
 
 #include <sstream>
 #include <algorithm>
+#include <chrono>
+#include <thread>
 
 #if defined(_MSC_VER)
 #include <direct.h>
@@ -1512,9 +1514,16 @@ void TaskProcessor::performRemoteSendDraft(Task * task) {
     */
 
     SMTPSession smtp;
-    SMTPProgress sprogress;
+    SMTPProgress sprogress{task, store};
     MailUtils::configureSessionForAccount(smtp, account);
     string succeeded;
+
+    // Recipients for the single-send path — avoids MessageParser of the full MIME
+    // just to re-read From/To/Cc/Bcc that the builder already has.
+    Array * allRecipients = Array::array();
+    allRecipients->addObjectsFromArray(to);
+    allRecipients->addObjectsFromArray(cc);
+    allRecipients->addObjectsFromArray(bcc);
 
     if (multisend) {
         logger->info("-- Sending customized message bodies to each recipient:");
@@ -1530,9 +1539,9 @@ void TaskProcessor::performRemoteSendDraft(Task * task) {
             } else {
                 builder.setHTMLBody(AS_MCSTR(it.value().get<string>()));
             }
-            Address * to = Address::addressWithMailbox(AS_MCSTR(it.key()));
+            Address * toAddr = Address::addressWithMailbox(AS_MCSTR(it.key()));
             Data * messageData = builder.data();
-            smtp.sendMessage(builder.header()->from(), Array::arrayWithObject(to), messageData, &sprogress, &err);
+            smtp.sendMessage(builder.header()->from(), Array::arrayWithObject(toAddr), messageData, &sprogress, &err);
             if (err != ErrorNone) {
                 break;
             }
@@ -1541,7 +1550,7 @@ void TaskProcessor::performRemoteSendDraft(Task * task) {
 
     } else {
         logger->info("-- Sending a single message body to all recipients:");
-        smtp.sendMessage(messageDataForSent, &sprogress, &err);
+        smtp.sendMessage(builder.header()->from(), allRecipients, messageDataForSent, &sprogress, &err);
     }
     
     if (err != ErrorNone) {
@@ -1567,24 +1576,30 @@ void TaskProcessor::performRemoteSendDraft(Task * task) {
         _removeMessagesResilient(session, store, account->id(), path, uids);
     }
 
+    // Notify the UI that SMTP accepted the message so the sending spinner can clear
+    // while we finish filing a copy into Sent. Remove the local draft in the same
+    // transaction so the composer does not flash back briefly.
+    {
+        MailStoreTransaction transaction{store, "sendDraftSmtpAccepted"};
+        task->data()["phase"] = "saving-copy";
+        task->data()["progress"] = 100;
+        store->save(task);
+        store->remove(&draft);
+        transaction.commit();
+    }
+
      /* Next, scan the sent folder for the message(s) we just sent through the SMTP
      gateway and clean them up. Some mail servers automatically place messages in the sent
      folder, others don't.
      */
     uint32_t sentFolderMessageUID = 0;
     {
-        // grab the last few items in the sent folder... we know we don't need more than 10
-        // because multisend is capped.
-        int tries = 0;
-        int delay[] = {0, 1, 1, 2, 2};
+        // Immediate lookup, then one short retry — avoid multi-second sleeps on large sends.
         IndexSet * uids = IndexSet::indexSet();
-        
-        while (tries < 4 && uids->count() == 0) {
-            if (delay[tries]) {
-                logger->info("-- No messages found. Sleeping {} to wait for sent folder to settle...", delay[tries]);
-				std::this_thread::sleep_for(std::chrono::seconds(delay[tries]));
-            }
-            tries ++;
+        session->findUIDsOfRecentHeaderMessageID(sentPath, AS_MCSTR(draft.headerMessageId()), uids);
+        if (uids->count() == 0) {
+            logger->info("-- No messages found. Sleeping 500ms to wait for sent folder to settle...");
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
             session->findUIDsOfRecentHeaderMessageID(sentPath, AS_MCSTR(draft.headerMessageId()), uids);
         }
     
@@ -1623,7 +1638,7 @@ void TaskProcessor::performRemoteSendDraft(Task * task) {
 
     if (sentFolderMessageUID == 0) {
         // Manually place a single message in the sent folder
-        IMAPProgress iprogress;
+        IMAPProgress iprogress{task, store};
         logger->info("-- Placing a new message with `self` body in the sent folder.");
         session->appendMessage(sentPath, messageDataForSent, MessageFlagSeen, &iprogress, &sentFolderMessageUID, &err);
         if (err != ErrorNone) {
@@ -1658,8 +1673,7 @@ void TaskProcessor::performRemoteSendDraft(Task * task) {
 
     if (sentFolderMessageUID == 0) {
         // If we still don't have a message in the sent folder, there's nothing we can do.
-        // Delete the draft and exit.
-        store->remove(&draft);
+        // The draft was already removed after SMTP acceptance.
         return;
     }
 
@@ -1691,10 +1705,7 @@ void TaskProcessor::performRemoteSendDraft(Task * task) {
     IndexSet * uids = IndexSet::indexSetWithIndex(sentFolderMessageUID);
     Array * remote = session->fetchMessagesByUID(sentPath, kind, uids, nullptr, &err);
 
-    // Delete the draft. We do this as close as possible to when we write the message in
-    // so there isn't any flicker in the client, but before error checking because we always
-    // want it to always disppear since sending succeeded.
-    store->remove(&draft);
+    // Draft was already removed after SMTP acceptance.
 
     if (err != ErrorNone) {
         logger->error("-X Error: {} occurred syncing the sent message to the local mail store. Metadata will not be attached.", ErrorCodeToTypeMap[err]);

@@ -952,6 +952,68 @@ static void mmapStringDeallocator(char * bytes, unsigned int length) {
 
 Data * SMTPSession::dataWithFilteredBcc(Data * data)
 {
+    // Fast path: scan only the header block. If there is no Bcc and a visible
+    // To/Cc already exists, skip mailimf_message_parse of the full MIME body
+    // (expensive for large attachments).
+    const char * bytes = data->bytes();
+    unsigned int length = data->length();
+    size_t headerEnd = length;
+    for (size_t i = 0; i + 1 < length; i++) {
+        if (bytes[i] == '\n') {
+            if (bytes[i + 1] == '\n') {
+                headerEnd = i;
+                break;
+            }
+            if (bytes[i + 1] == '\r' && i + 2 < length && bytes[i + 2] == '\n') {
+                headerEnd = i;
+                break;
+            }
+        }
+    }
+
+    bool hasBcc = false;
+    bool hasRecipient = false;
+    size_t lineStart = 0;
+    for (size_t i = 0; i <= headerEnd; i++) {
+        if (i != headerEnd && bytes[i] != '\n') {
+            continue;
+        }
+        size_t lineLen = i - lineStart;
+        if (lineLen > 0 && bytes[i - 1] == '\r') {
+            lineLen--;
+        }
+        const char * line = bytes + lineStart;
+        lineStart = i + 1;
+
+        if (lineLen == 0 || line[0] == ' ' || line[0] == '\t') {
+            continue;
+        }
+
+        if (lineLen >= 4 &&
+            (line[0] == 'B' || line[0] == 'b') &&
+            (line[1] == 'c' || line[1] == 'C') &&
+            (line[2] == 'c' || line[2] == 'C') &&
+            line[3] == ':') {
+            hasBcc = true;
+            break;
+        }
+        if (lineLen >= 3 &&
+            (line[0] == 'T' || line[0] == 't') &&
+            (line[1] == 'o' || line[1] == 'O') &&
+            line[2] == ':') {
+            hasRecipient = true;
+        } else if (lineLen >= 3 &&
+                   (line[0] == 'C' || line[0] == 'c') &&
+                   (line[1] == 'c' || line[1] == 'C') &&
+                   line[2] == ':') {
+            hasRecipient = true;
+        }
+    }
+
+    if (!hasBcc && hasRecipient) {
+        return data;
+    }
+
     int r;
     size_t idx;
     struct mailimf_message * msg;
@@ -965,7 +1027,7 @@ Data * SMTPSession::dataWithFilteredBcc(Data * data)
     struct mailimf_fields * fields = msg->msg_fields;
     int col = 0;
 
-    int hasRecipient = 0;
+    int hasRecipientParsed = 0;
     bool bccWasActuallyRemoved = false;
     for(clistiter * cur = clist_begin(fields->fld_list) ; cur != NULL ; cur = clist_next(cur)) {
         struct mailimf_field * field = (struct mailimf_field *) clist_content(cur);
@@ -976,10 +1038,10 @@ Data * SMTPSession::dataWithFilteredBcc(Data * data)
             break;
         }
         else if ((field->fld_type == MAILIMF_FIELD_TO) || (field->fld_type == MAILIMF_FIELD_CC)) {
-            hasRecipient = 1;
+            hasRecipientParsed = 1;
         }
     }
-    if (!hasRecipient) {
+    if (!hasRecipientParsed) {
         struct mailimf_address_list * imfTo;
         imfTo = mailimf_address_list_new_empty();
         mailimf_address_list_add_parse(imfTo, (char *) "Undisclosed recipients:;");
@@ -989,7 +1051,7 @@ Data * SMTPSession::dataWithFilteredBcc(Data * data)
     }
 
     Data * result;
-    if (!hasRecipient || bccWasActuallyRemoved) {
+    if (!hasRecipientParsed || bccWasActuallyRemoved) {
         MMAPString * str = mmap_string_new("");
         mailimf_fields_write_mem(str, &col, fields);
         mmap_string_append(str, "\n");
